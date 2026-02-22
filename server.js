@@ -25,18 +25,19 @@ app.post('/api/edge-tts', async (req, res) => {
         const tts = new EdgeTTS({
             voice: model,
             lang: model.substring(0, 5), // misal: "id-ID"
-            outputFormat: "audio-24khz-48kbitrate-mono-mp3"
+            outputFormat: "audio-24khz-48kbitrate-mono-mp3",
+            timeout: 60000 // ✨ VITAL: Naikkan timeout dari 10 detik (bawaan) menjadi 60 detik
         });
-        
+
         // Simpan file sementara
         tmpPath = path.join(os.tmpdir(), `tts_${crypto.randomBytes(6).toString('hex')}.mp3`);
         await tts.ttsPromise(text, tmpPath);
 
         // Baca audio sebagai buffer
         const audioBuffer = fs.readFileSync(tmpPath);
-        
+
         // Bersihkan file sementara
-        try { fs.unlinkSync(tmpPath); } catch (e) {}
+        try { fs.unlinkSync(tmpPath); } catch (e) { }
 
         // Kirim audio kembali ke pemanggil
         res.setHeader('Content-Type', 'audio/mpeg');
@@ -45,12 +46,12 @@ app.post('/api/edge-tts', async (req, res) => {
 
     } catch (error) {
         if (tmpPath) {
-            try { fs.unlinkSync(tmpPath); } catch (e) {}
+            try { fs.unlinkSync(tmpPath); } catch (e) { }
         }
         console.error("Error in Edge TTS route:", error);
-        res.status(500).json({ 
-            success: false, 
-            message: error.message || "Internal Server Error"
+        res.status(500).json({
+            success: false,
+            message: error.message || error || "Internal Server Error"
         });
     }
 });
