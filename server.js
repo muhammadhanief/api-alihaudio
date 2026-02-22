@@ -10,7 +10,8 @@ const app = express();
 
 // WAJIB: Izinkan aplikasi AlihAudio Anda mengakses API ini
 app.use(cors({ origin: '*' }));
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 app.post('/api/edge-tts', async (req, res) => {
     let tmpPath = "";
